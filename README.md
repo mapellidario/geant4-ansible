@@ -20,7 +20,7 @@ or, if you do not need the clhep, only
 
 ## Details
 
-This playbook build locally `root-cern`, `clhep` and `geant4` with `cmake` and
+This playbook builds locally `root-cern`, `clhep` and `geant4` with `cmake` and
 `make`. It creates both build and install directories, so that after the
 compilation the source and build directories can be deleted.
 The install directories can be found in `~/software`.
