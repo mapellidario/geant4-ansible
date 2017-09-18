@@ -1,0 +1,17 @@
+- name: update cache
+  apt: update_cache=yes
+
+- name: install prerequisites
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - qtbase5-dev
+    - libgl1-mesa-dev
+    - libx11-dev
+    - libxmu-dev
+    - libmotiv-dev
+    - libxerces-c-dev
+
+# check this file!
+# it may be that the debian packages are different from the ubuntu ones

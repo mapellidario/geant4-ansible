@@ -1,0 +1,73 @@
+- include: "{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/os-check.yml"
+- include: "{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/prerequisites.yml"
+
+- name: mkdir root folder
+  file:
+    path: "{{ root_cern_dir }}"
+    state: directory
+    recurse: yes
+    owner: "{{ local_user }}"
+    group: "{{ local_group }}"
+    mode: 0744
+
+- name: download root
+  get_url:
+    url: "https://root.cern.ch/download/{{ root_cern_archive  }}"
+    dest: "{{ root_cern_dir }}/{{ root_cern_archive }}"
+
+- name: extract archive
+  unarchive:
+      src: "{{ root_cern_dir }}/{{ root_cern_archive }}"
+      dest: "{{ root_cern_dir }}"
+      remote_src: yes
+      owner: "{{ local_user }}"
+      group: "{{ local_group }}"
+
+- name: create build directory
+  file:
+    path: "{{ root_cern_build }}"
+    state: directory
+    recurse: yes
+    owner: "{{ local_user }}"
+    group: "{{ local_group }}"
+    mode: 0744
+
+- name: create install directory
+  file:
+    path: "{{ root_cern_install }}"
+    state: directory
+    recurse: yes
+    owner: "{{ local_user }}"
+    group: "{{ local_group }}"
+    mode: 0744
+
+- name: cmake configure
+  shell: "cmake -Droofit=ON -Dgdml=ON -Dminuit2=ON -Dpython3=ON -DCMAKE_INSTALL_PREFIX={{ root_cern_install }} {{ root_cern_source }}"
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    chdir: "{{ root_cern_build }}"
+    executable: /bin/bash
+
+- name: compile (make)
+  shell: "make -j`grep -c processor /proc/cpuinfo`"
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    chdir: "{{ root_cern_build }}"
+    executable: /bin/bash
+
+- name: (make install)
+  shell: "make install"
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    chdir: "{{ root_cern_build }}"
+    executable: /bin/bash
+
+- name: conclude the installation, update $PATH and $LD_LIBRARY_PATH
+  shell: "echo '{{ root_cern_load_command }}' >> {{ root_cern_load_file }} "
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    executable: /bin/bash

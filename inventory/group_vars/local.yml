@@ -1,0 +1,57 @@
+local_user: user
+local_group: user
+local_user_id: 1000
+local_group_id: 1000
+
+user_dir: "/home/{{ local_user }}"
+
+# ROOT-CERN
+root_cern_base_dir: "{{ user_dir }}/software"
+root_cern_dir: "{{ root_cern_base_dir }}/root"
+
+root_cern_version: "6.10.02"
+
+root_cern_archive: "root_v{{ root_cern_version }}.source.tar.gz"
+root_cern_source: "{{ root_cern_dir}}/root-{{ root_cern_version }}"
+root_cern_build: "{{ root_cern_dir }}/root-{{ root_cern_version }}-build"
+root_cern_install: "{{ root_cern_dir }}/root-{{ root_cern_version }}-install"
+
+root_cern_load_command: "\n# root\nsource {{ root_cern_install }}/bin/thisroot.sh"
+root_cern_load_file: "{{ user_dir }}/.bashrc"
+
+# CLHEP
+clhep_base_dir: "{{ user_dir }}/software"
+clhep_dir: "{{ clhep_base_dir }}/clhep"
+
+clhep_version: "2.3.4.4"
+
+clhep_archive: "clhep-{{ clhep_version }}.tgz"
+clhep_source: "{{ clhep_dir }}/{{ clhep_version }}/CLHEP"
+clhep_build: "{{ clhep_dir }}/clhep-{{ clhep_version }}-build"
+clhep_install: "{{ clhep_dir }}/clhep-{{ clhep_version }}-install"
+
+clhep_load_command: "\n# clhep\nexport PATH={{ clhep_install }}/bin:$PATH\nexport LD_LIBRARY_PATH={{ clhep_install }}/lib:$LD_LIBRARY_PATH"
+clhep_load_file: "{{ user_dir }}/.bashrc"
+
+# GEANT4
+geant4_base_dir: "{{ user_dir }}/software"
+geant4_dir: "{{ geant4_base_dir }}/geant4"
+
+geant4_major: "10"
+geant4_minor: "3"
+geant4_patch: "2"
+
+geant4_option_clhep: "-DGEANT4_USE_SYSTEM_CLHEP=ON -DCLHEP_ROOT_DIR={{ clhep_install }}"
+# in order not to link the clhep, put
+# geant4_option_clhep: ""
+
+geant4_base_name: "geant4.{{ geant4_major }}.0{{ geant4_minor }}.p0{{ geant4_patch }}"
+geant4_archive: "{{ geant4_base_name }}.tar.gz"
+geant4_source: "{{ geant4_dir }}/{{ geant4_base_name }}"
+geant4_build: "{{ geant4_dir }}/{{ geant4_base_name }}-build"
+geant4_install: "{{ geant4_dir }}/{{ geant4_base_name }}-install"
+
+geant4_load_file: "{{ user_dir }}/.bashrc"
+geant4_load_command: "\n# geant4\nsource {{ geant4_install }}/bin/geant4.sh"
+# geant4_load_file_zsh: "{{ user_dir }}/.oh-my-zsh/custom/software.zsh"
+# geant4_load_command_zsh: "\n# geant4\ncd {{ geant4_install }}/bin\nsource geant4.sh\ncd ${source_dir}"

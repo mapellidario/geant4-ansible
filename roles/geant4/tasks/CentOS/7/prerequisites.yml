@@ -1,0 +1,19 @@
+- name: install prerequisites
+  yum:
+    name: '{{ item }}'
+    state: latest
+  with_items:
+    - qtbase5-dev
+    - libgl1-mesa-dev
+    - libx11-dev
+    - libxmu-dev
+    - libmotiv-dev
+    - libxerces-c-dev
+
+# This is broken!
+# find what packages are required for centos 7
+# * qt5    (qtbase5-dev) (qt >= 4.6)
+# * opengl (libgl1-mesa-dev)
+# * x11    (libx11-dev)
+# * xmu    (libxmu-dev && libmotiv-dev)
+# * gdml   (xerces c++, (libxerces-c-dev in debian))

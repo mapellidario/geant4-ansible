@@ -1,0 +1,13 @@
+- name: update cache
+  apt: update_cache=yes
+
+- name: install prerequisites
+  apt:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - make
+    - cmake
+    - g++
+    - gcc
+    - binutils

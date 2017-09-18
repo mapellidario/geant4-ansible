@@ -1,0 +1,109 @@
+- include: "{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/os-check.yml"
+- include: "{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/prerequisites.yml"
+
+- name: mkdir geant4 folder
+  file:
+    path: "{{ geant4_dir }}"
+    state: directory
+    recurse: yes
+    owner: "{{ local_user }}"
+    group: "{{ local_group }}"
+    mode: 0744
+
+- name: download geant4
+  get_url:
+    url: "http://cern.ch/geant4/support/source/{{ geant4_archive  }}"
+#    url: "http://geant4.cern.ch/support/source/{{ geant4_archive  }}"
+    dest: "{{ geant4_dir }}/{{ geant4_archive }}"
+
+- name: extract archive
+  unarchive:
+      src: "{{ geant4_dir }}/{{ geant4_archive }}"
+      dest: "{{ geant4_dir }}"
+      remote_src: yes
+      owner: "{{ local_user }}"
+      group: "{{ local_group }}"
+
+- name: create build directory
+  file:
+    path: "{{ geant4_build }}"
+    state: directory
+    recurse: yes
+    owner: "{{ local_user }}"
+    group: "{{ local_group }}"
+    mode: 0744
+
+- name: create install directory
+  file:
+    path: "{{ geant4_install }}"
+    state: directory
+    recurse: yes
+    owner: "{{ local_user }}"
+    group: "{{ local_group }}"
+    mode: 0744
+
+- name: cmake configure
+  shell: "cmake -DGEANT4_USE_OPENGL_X11=ON -DGEANT4_USE_QT=ON -DGEANT4_USE_XM=ON -DGEANT4_INSTALL_DATA=ON -DGEANT4_BUILD_MULTITHREADED=ON -DGEANT4_USE_GDML=ON {{ geant4_option_clhep }} -DCMAKE_INSTALL_PREFIX={{ geant4_install }} {{ geant4_source }}"
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    chdir: "{{ geant4_build }}"
+    executable: /bin/bash
+
+
+- name: compile (make)
+  shell: "make -j`grep -c processor /proc/cpuinfo`"
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    chdir: "{{ geant4_build }}"
+    executable: /bin/bash
+
+- name: (make install)
+  shell: "make install"
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    chdir: "{{ geant4_build }}"
+    executable: /bin/bash
+
+- name: conclude the installation, update $PATH and $LD_LIBRARY_PATH
+  shell: "echo '{{ geant4_load_command }}' >> {{ geant4_load_file }} "
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    executable: /bin/bash
+
+# - name: conclude the installation, update $PATH and $LD_LIBRARY_PATH
+#   shell: "echo '{{ geant4_load_command_zsh }}' >> {{ geant4_load_file_zsh }} "
+#   args:
+#     executable: /bin/bash
+
+- name: create example B1 build directory
+  file:
+    path: "{{ geant4_example_build }}"
+    state: directory
+    recurse: yes
+    owner: "{{ local_user }}"
+    group: "{{ local_group }}"
+    mode: 0744
+
+- name: configure the example B1
+  shell: "cmake ../B1"
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    chdir: "{{ geant4_example_build }}"
+    executable: "/bin/bash"
+
+- name: compile the example B1
+  shell: "make"
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    chdir: "{{ geant4_example_build }}"
+    executable: "/bin/bash"
+
+# TODO
+# source .bashrc
+# compile the exampleB1

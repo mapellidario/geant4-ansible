@@ -1,0 +1,9 @@
+---
+- name: Install ROOT-CERN
+  hosts: local
+  remote_user: "{{ local_user }}"
+  become: yes
+  become_method: sudo
+  max_fail_percentage: 0
+  roles:
+  - root-cern

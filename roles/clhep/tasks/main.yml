@@ -1,0 +1,73 @@
+- include: "{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/os-check.yml"
+- include: "{{ ansible_distribution }}/{{ ansible_distribution_major_version }}/prerequisites.yml"
+
+- name: mkdir clhep folder
+  file:
+    path: "{{ clhep_dir }}"
+    state: directory
+    recurse: yes
+    owner: "{{ local_user }}"
+    group: "{{ local_group }}"
+    mode: 0744
+
+- name: download clhep
+  get_url:
+    url: "http://proj-clhep.web.cern.ch/proj-clhep/DISTRIBUTION/tarFiles/{{ clhep_archive }}"
+    dest: "{{ clhep_dir }}/{{ clhep_archive }}"
+
+- name: extract archive
+  unarchive:
+      src: "{{ clhep_dir }}/{{ clhep_archive }}"
+      dest: "{{ clhep_dir }}"
+      remote_src: yes
+      owner: "{{ local_user }}"
+      group: "{{ local_group }}"
+
+- name: create build directory
+  file:
+    path: "{{ clhep_build }}"
+    state: directory
+    recurse: yes
+    owner: "{{ local_user }}"
+    group: "{{ local_group }}"
+    mode: 0744
+
+- name: create install directory
+  file:
+    path: "{{ clhep_install }}"
+    state: directory
+    recurse: yes
+    owner: "{{ local_user }}"
+    group: "{{ local_group }}"
+    mode: 0744
+
+- name: cmake configure
+  shell: "cmake -DCMAKE_INSTALL_PREFIX={{ clhep_install }} {{ clhep_source }}"
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    chdir: "{{ clhep_build }}"
+    executable: /bin/bash
+
+- name: compile (make)
+  shell: "make -j`grep -c processor /proc/cpuinfo`"
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    chdir: "{{ clhep_build }}"
+    executable: /bin/bash
+
+- name: (make install)
+  shell: "make install"
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    chdir: "{{ clhep_build }}"
+    executable: /bin/bash
+
+- name: conclude the installation, update $PATH and $LD_LIBRARY_PATH
+  shell: "echo '{{ clhep_load_command }}' >> {{ clhep_load_file }} "
+  become: yes
+  become_user: "{{ local_user }}"
+  args:
+    executable: /bin/bash

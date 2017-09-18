@@ -1,0 +1,12 @@
+- name: install prerequisites
+  yum:
+    name: '{{ item }}'
+    state: latest
+  with_items:
+  - git
+  - cmake
+  - gcc-c++
+  - gcc
+  - binutils
+
+# check this file!
